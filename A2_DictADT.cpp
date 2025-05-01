@@ -1,3 +1,5 @@
+// Implement all the functions of a dictionary (ADT) using hashing and handle collisions using chaining with / without replacement.
+
 #include <iostream>
 #include <list>
 #include <string>
