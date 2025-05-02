@@ -1,6 +1,4 @@
-/*  Group A Practical 1
-
-Consider telephone book database of N clients. Make use of a hash table implementation to quickly look up client‘s telephone number. 
+/* Consider telephone book database of N clients. Make use of a hash table implementation to quickly look up client‘s telephone number. 
 Make use of two collision handling techniques and compare them using number of comparisons required to find a set of telephone numbers */
 
 #include <iostream>
@@ -9,31 +7,25 @@ using namespace std;
 
 const int TABLE_SIZE = 10;
 
-// Linear Probing 
 class LinearProbingHash {
-    int table[TABLE_SIZE];
+    int table[TABLE_SIZE] = {-1};
 
 public:
-    LinearProbingHash() {
-        for (int i = 0; i < TABLE_SIZE; i++) table[i] = -1;
-    }
+    LinearProbingHash() { fill(begin(table), end(table), -1); }
 
     void insert(int key) {
-        int idx = key % TABLE_SIZE;
-        int start = idx;
+        int idx = key % TABLE_SIZE, start = idx;
         while (table[idx] != -1) {
             idx = (idx + 1) % TABLE_SIZE;
-            if (idx == start) {
-                cout << "Hash table is full!" << endl;
-                return;
-            }
+            if (idx == start) { 
+                cout << "Hash table is full!\n"; 
+                return; }
         }
         table[idx] = key;
     }
 
     int search(int key, int &comparisons) {
-        int idx = key % TABLE_SIZE;
-        int start = idx;
+        int idx = key % TABLE_SIZE, start = idx;
         comparisons = 1;
         while (table[idx] != key) {
             if (table[idx] == -1) return -1;
@@ -45,25 +37,18 @@ public:
     }
 
     void display() {
-        cout << "\nHash Table (Linear Probing):" << endl;
-        for (int i = 0; i < TABLE_SIZE; i++) {
-            cout << "[" << i << "]: ";
-            if (table[i] == -1) cout << "Empty";
-            else cout << table[i];
-            cout << endl;
-        }
+        cout << "\nHash Table (Linear Probing):\n";
+        for (int i = 0; i < TABLE_SIZE; i++)
+            cout << "[" << i << "]: " << (table[i] == -1 ? "Empty" : to_string(table[i])) << '\n';
     }
 };
 
-//Chaining
+// Chaining
 class ChainingHash {
     vector<int> table[TABLE_SIZE];
 
 public:
-    void insert(int key) {
-        int idx = key % TABLE_SIZE;
-        table[idx].push_back(key);
-    }
+    void insert(int key) { table[key % TABLE_SIZE].push_back(key); }
 
     int search(int key, int &comparisons) {
         int idx = key % TABLE_SIZE;
@@ -76,94 +61,62 @@ public:
     }
 
     void display() {
-        cout << "\nHash Table (Chaining):" << endl;
+        cout << "\nHash Table (Chaining):\n";
         for (int i = 0; i < TABLE_SIZE; i++) {
             cout << "[" << i << "]: ";
-            for (int val : table[i]) {
-                cout << val << " -> ";
-            }
-            cout << "NULL" << endl;
+            for (int val : table[i]) cout << val << " -> ";
+            cout << "NULL\n";
         }
     }
 };
 
-//Input Validation 
-int getValidChoice() {
-    int choice;
+int getValid(int type = 0) {
+    int x;
     while (true) {
-        cout << "Choose Collision Handling Technique:" << endl;
-        cout << "1. Linear Probing" << endl;
-        cout << "2. Chaining" << endl;
-        cout << "Enter choice (1 or 2): ";
-        cin >> choice;
+        if (type == 0)
+            cout << "Enter 8-digit telephone number: ";
+        else
+            cout << "Enter number of telephone numbers: ";
 
-        if (cin.fail() || (choice != 1 && choice != 2)) {
-            cout << "Invalid input! Please enter a valid choice (1 or 2).\n" << endl;
-        } else {
-            break;
-        }
+        cin >> x;
+        if (cin.fail() || (type == 0 && (x < 10000000 || x > 99999999)) || (type == 1 && x <= 0)) {
+            cout << "Invalid input! Try again.\n";
+            cin.clear(); cin.ignore(10000, '\n');
+        } else break;
     }
-    return choice;
+    return x;
 }
 
-int getValidPhoneNumber() {
-    int num;
-    while (true) {
-        cout << "Enter 8-digit telephone number: ";
-        cin >> num;
-
-        if (cin.fail() || num < 10000000 || num > 99999999) {
-            cout << " Invalid number! Please enter a valid 8-digit number.\n";
-        } else {
-            break;
-        }
-    }
-    return num;
-}
-
-// Main Function
 int main() {
-    int choice = getValidChoice();
-    int n, num, comparisons;
+    int choice;
+    do {
+        cout << "Choose Collision Handling Technique:\n1. Linear Probing\n2. Chaining\nEnter choice (1 or 2): ";
+        cin >> choice;
+    } while (choice != 1 && choice != 2);
 
-    cout << "\nEnter number of telephone numbers to insert: ";
-    while (!(cin >> n) || n <= 0) {
-        cout << " Invalid input! Please enter a positive integer: ";
-    }
+    int n = getValid(1), num, comparisons;
 
     if (choice == 1) {
         LinearProbingHash lph;
-        for (int i = 0; i < n; i++) {
-            num = getValidPhoneNumber();
-            lph.insert(num);
-        }
 
+        while (n--) lph.insert(getValid());
         lph.display();
-
         cout << "\nSearch Telephone Number\n";
-        num = getValidPhoneNumber();
+        num = getValid();
+
         int index = lph.search(num, comparisons);
-        if (index != -1)
-            cout << "Number found at index " << index << " with " << comparisons << " comparisons." << endl;
-        else
-            cout << "Number not found. Comparisons made: " << comparisons << endl;
-
-    } else if (choice == 2) {
+        cout << (index != -1 ? "Found at index " + to_string(index) : "Not found") 
+             << " with " << comparisons << " comparisons.\n";
+    } else {
         ChainingHash ch;
-        for (int i = 0; i < n; i++) {
-            num = getValidPhoneNumber();
-            ch.insert(num);
-        }
 
+        while (n--) ch.insert(getValid());
         ch.display();
-
         cout << "\nSearch Telephone Number\n";
-        num = getValidPhoneNumber();
+
+        num = getValid();
         int index = ch.search(num, comparisons);
-        if (index != -1)
-            cout << "Number found in chain at index " << index << " with " << comparisons << " comparisons." << endl;
-        else
-            cout << "Number not found. Comparisons made: " << comparisons << endl;
+        cout << (index != -1 ? "Found in chain at index " + to_string(index) : "Not found") << " with " << comparisons << " comparisons.\n";
     }
 
     return 0;
