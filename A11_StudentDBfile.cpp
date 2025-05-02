@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 using namespace std;
 
@@ -10,7 +11,7 @@ class Student {
 public:
     int roll;
     string name;
-    char division;
+    string division;
     string address;
 
     void accept() {
@@ -19,18 +20,35 @@ public:
         cin.ignore();
         cout << "Enter Name: ";
         getline(cin, name);
-        cout << "Enter Division (A/B/C): ";
-        cin >> division;
-        cin.ignore();
+        cout << "Enter Division: ";
+        getline(cin, division);
         cout << "Enter Address: ";
         getline(cin, address);
     }
 
-    void display() {
-        cout << "\nRoll No: " << roll;
-        cout << "\nName: " << name;
-        cout << "\nDivision: " << division;
-        cout << "\nAddress: " << address << "\n";
+    void display() const {
+        cout << "\nRoll No: " << roll
+             << "\nName: " << name
+             << "\nDivision: " << division
+             << "\nAddress: " << address << "\n";
+    }
+
+    string toString() const {
+        return to_string(roll) + "|" + name + "|" + division + "|" + address;
+    }
+
+    static Student fromString(const string& str) {
+        stringstream ss(str);
+        string temp;
+        Student s;
+
+        getline(ss, temp, '|');
+        s.roll = stoi(temp);
+        getline(ss, s.name, '|');
+        getline(ss, s.division, '|');
+        getline(ss, s.address, '|');
+
+        return s;
     }
 };
 
@@ -39,7 +57,7 @@ void addStudent() {
     Student s;
     s.accept();
     ofstream outFile("student.txt", ios::app);
-    outFile << s.roll << "|" << s.name << "|" << s.division << "|" << s.address << "\n";
+    outFile << s.toString() << "\n";
     outFile.close();
     cout << "Student added successfully!\n";
 }
@@ -47,28 +65,19 @@ void addStudent() {
 // Displays student by roll number
 void displayStudent(int rollNo) {
     ifstream inFile("student.txt");
-    Student s;
-    bool found = false;
     string line;
+    bool found = false;
 
     while (getline(inFile, line)) {
-        int delim1 = line.find("|");
-        int delim2 = line.find("|", delim1 + 1);
-        int delim3 = line.find("|", delim2 + 1);
-
-        s.roll = stoi(line.substr(0, delim1));
-        s.name = line.substr(delim1 + 1, delim2 - delim1 - 1);
-        s.division = line[delim2 + 1];
-        s.address = line.substr(delim3 + 1);
-
+        Student s = Student::fromString(line);
         if (s.roll == rollNo) {
             s.display();
             found = true;
             break;
         }
     }
-
     inFile.close();
+
     if (!found)
         cout << "Student with roll number " << rollNo << " not found.\n";
 }
@@ -77,20 +86,13 @@ void displayStudent(int rollNo) {
 void deleteStudent(int rollNo) {
     ifstream inFile("student.txt");
     ofstream tempFile("temp.txt");
-
-    Student s;
     string line;
     bool deleted = false;
 
     while (getline(inFile, line)) {
-        int delim1 = line.find("|");
-        int delim2 = line.find("|", delim1 + 1);
-        int delim3 = line.find("|", delim2 + 1);
-
-        s.roll = stoi(line.substr(0, delim1));
-
+        Student s = Student::fromString(line);
         if (s.roll != rollNo)
-            tempFile << line << "\n";
+            tempFile << s.toString() << "\n";
         else
             deleted = true;
     }
@@ -106,6 +108,7 @@ void deleteStudent(int rollNo) {
     else
         cout << "Student with roll number " << rollNo << " not found!\n";
 }
+
 int main() {
     int choice, roll;
 
@@ -142,3 +145,4 @@ int main() {
 
     return 0;
 }
+
