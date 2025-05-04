@@ -92,7 +92,8 @@ int main() {
                 cout << "Enter key: ";
                 cin >> key;
                 cout << "Enter value: ";
-                cin >> value;
+                cin.ignore();  // Ignore the newline character left in the buffer
+                getline(cin, value);  // To handle spaces in value
                 dict.insert(key, value);
                 break;
 
@@ -119,7 +120,7 @@ int main() {
             default:
                 cout << "Invalid choice. Try again.\n";
         }
-
+ 
     } while (choice != 5);
 
     return 0;
